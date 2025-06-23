@@ -3,9 +3,9 @@ CC=$(CROSS_COMPILE)gcc
 
 .PHONY: all clean
 
-all: finder-app/writer
+all: writer
 
-finder-app/writer: finder-app/writer.c
+writer: writer.c
 
 clean:
-	rm -rf *.o finder-app/writer
+	rm -rf *.o writer
