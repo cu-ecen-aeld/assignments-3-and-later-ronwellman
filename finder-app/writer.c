@@ -21,17 +21,17 @@
 
 int main(int argc, char **argv)
 {
-	int ret = EXIT_SUCCESS;
-	FILE *fd = NULL;
-	size_t bytes = 0;
-	size_t sizeChar = sizeof(*argv[2]);
-	size_t nmemb = strlen(argv[2]);
-
 	if (3 != argc)
 	{
 		fprintf(stderr, "USAGE: %s <FILENAME> <STRING>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
+
+	int ret = EXIT_SUCCESS;
+	FILE *fd = NULL;
+	size_t bytes = 0;
+	size_t sizeChar = sizeof(*argv[2]);
+	size_t nmemb = strlen(argv[2]);
 
 	openlog(argv[0], LOG_CONS, LOG_USER);
 
