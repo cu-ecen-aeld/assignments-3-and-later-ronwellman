@@ -7,7 +7,7 @@ if [ 2 -ne $# ]; then
 fi
 
 writefile=$1
-writestr=$2
+writestr=$2  
 basepath=$(dirname $writefile)
 
 # create parent directories if needed
