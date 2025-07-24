@@ -89,7 +89,7 @@ bool do_exec(int count, ...)
         if (-1 == rc)
         {
             perror("execv failed");
-            ret = false;
+            exit(EXIT_FAILURE);
         }
     }
     else if (-1 == pid)
