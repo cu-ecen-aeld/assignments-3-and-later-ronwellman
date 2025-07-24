@@ -89,7 +89,7 @@ bool do_exec(int count, ...)
         if (-1 == rc)
         {
             perror("execv failed");
-            exit(EXIT_FAILURE);
+            ret = false;
         }
     }
     else if (-1 == pid)
@@ -160,21 +160,54 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         goto EXIT_FAILURE_NOW;
     }
 
-    rc = dup2(fd, STDOUT_FILENO);
-    if (-1 == rc)
+    errno = 0;
+    pid_t pid = fork();
+    if (-1 == pid)
     {
-        perror("dup2 failed");
+        perror("fork failed");
         ret = false;
-        goto EXIT_CLOSE_NOW;
+    }
+    else if (0 == pid)
+    {
+
+        rc = dup2(fd, STDOUT_FILENO);
+        if (-1 == rc)
+        {
+            perror("dup2 failed");
+            ret = false;
+            goto EXIT_CLOSE_NOW;
+        }
+
+        errno = 0;
+        rc = execv(command[0], command);
+        if (-1 == rc)
+        {
+            perror("execv failed");
+            ret = false;
+        }
+    }
+    else
+    {
+        int status = 0;
+        errno = 0;
+        rc = wait(&status);
+        if (-1 == rc)
+        {
+            perror("waitpid failed");
+            ret = false;
+        }
+        else if (WIFEXITED(status))
+        {
+            if (WEXITSTATUS(status) != EXIT_SUCCESS)
+            {
+                fprintf(stderr, "Command '%s' exited with status %d\n", command[0], WEXITSTATUS(status));
+                ret = false;
+            }
+        }
     }
 
-    errno = 0;
-    rc = execv(command[0], command);
-    if (-1 == rc)
-    {
-        perror("execv failed");
-        ret = false;
-    }
+    // restore stdout
+    dup2(STDOUT_FILENO, fd);
 
 EXIT_CLOSE_NOW:
     close(fd);
