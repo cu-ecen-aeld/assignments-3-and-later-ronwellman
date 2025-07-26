@@ -13,7 +13,9 @@ BUSYBOX_VERSION=1_36_1
 BUSYBOX_REPO=https://github.com/mirror/busybox.git
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
-CROSS_COMPILE=aarch64-none-linux-gnu-
+CROSS_TARGET=aarch64-none-linux-gnu
+CROSS_COMPILE=${CROSS_TARGET}-
+CROSS_LIBRARIES=$(dirname $(which ${CROSS_COMPILE}gcc))/../${CROSS_TARGET}/libc
 
 if [ $# -lt 1 ]
 then
@@ -101,10 +103,10 @@ ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "program interpre
 ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
-cp /opt/cross/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
-cp /opt/cross/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
-cp /opt/cross/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
-cp /opt/cross/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
+cp ${CROSS_LIBRARIES}/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
+cp ${CROSS_LIBRARIES}/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
+cp ${CROSS_LIBRARIES}/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
+cp ${CROSS_LIBRARIES}/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
 
 # TODO: Make device nodes
 sudo mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
