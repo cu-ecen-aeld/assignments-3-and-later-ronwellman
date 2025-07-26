@@ -5,7 +5,7 @@
 set -e
 set -u
 
-SOURCE_DIR=$(pwd)
+SOURCEDIR=$(pwd)
 OUTDIR=/tmp/aeld
 KERNEL_REPO=git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
 KERNEL_VERSION=v5.15.163
@@ -54,7 +54,7 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
 fi
 
 echo "Adding the Image in outdir"
-cp vmlinux ${OUTDIR}/Image
+cp ${OUTDIR}/linux-stable/arch/arm64/boot/Image ${OUTDIR}/
 
 echo "Creating the staging directory for the root filesystem"
 cd "$OUTDIR"
@@ -69,6 +69,7 @@ mkdir -p ${OUTDIR}/rootfs
 mkdir -p ${OUTDIR}/rootfs/{bin,dev,home,lib,lib64,proc,sbin,sys,tmp,usr,var}
 mkdir -p ${OUTDIR}/rootfs/usr/{bin,lib,sbin}
 mkdir -p ${OUTDIR}/rootfs/var/log
+mkdir -p ${OUTDIR}/rootfs/home/conf
 
 cd "$OUTDIR"
 if [ ! -d "${OUTDIR}/busybox" ]
@@ -108,17 +109,28 @@ cp /opt/cross/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/aarch64-
 # TODO: Make device nodes
 sudo mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
 sudo mknod -m 600 ${OUTDIR}/rootfs/dev/console c 5 1
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/tty c 5 0
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/tty0 c 4 0
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/tty1 c 4 1
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/tty2 c 4 2
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/tty3 c 4 3
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/tty4 c 4 4
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/ttyS0 c 4 64
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/ttyS1 c 4 65
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/ttyS2 c 4 66
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/ttyS3 c 4 67
+sudo mknod -m 660 ${OUTDIR}/rootfs/dev/ttyS4 c 4 68
 
 # TODO: Clean and build the writer utility
-cd ${SOURCE_DIR}
+cd ${SOURCEDIR}
 make clean
 CROSS_COMPILE=${CROSS_COMPILE} make
-
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
 cp *.sh ${OUTDIR}/rootfs/home
 cp writer ${OUTDIR}/rootfs/home
+cp ../conf/*.txt ${OUTDIR}/rootfs/home/conf/
 
 # TODO: Chown the root directory
 sudo chown -R root:root ${OUTDIR}/rootfs
